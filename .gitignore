@@ -1,0 +1,3 @@
+# Never commit a filled config
+webhook.env
+!webhook.env.example
