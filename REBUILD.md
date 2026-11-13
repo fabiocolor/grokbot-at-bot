@@ -67,9 +67,11 @@ another handoff.
   `GROKBOT_WEBHOOK_AUTH`. Both senders parse it as data, including quoted
   values and unquoted Authorization headers with spaces. `PASTE_…` values
   count as missing.
-- The agent writes the payload to a temporary UTF-8 file, posts it with `curl`
-  (macOS/Linux) or `Invoke-RestMethod` (Windows), prints only the status and
-  deletes the file. Both snippets are in `SKILL.md`.
+- On macOS and Linux, the agent posts the payload from a temporary UTF-8
+  file using `curl` and deletes the file afterwards. On Windows, PowerShell
+  serializes the payload in memory and sends the UTF-8 bytes with
+  `Invoke-RestMethod`. Both senders report the result without printing
+  the payload or credentials.
 - The URL and Authorization value are never printed or logged.
 
 ## Skill rules

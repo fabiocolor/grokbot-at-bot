@@ -77,12 +77,12 @@ explicit UTC time, and completion callbacks directly.
 
 ## Send
 
-Write the payload, JSON-escaped, to a temporary UTF-8 file and post it.
 Credentials come only from `~/.config/grokbot/webhook.env`. Never print or log
 them, enable shell tracing, or source the file as shell code. The Authorization
 value can be an unquoted `Bearer …` string.
 
-macOS/Linux:
+On macOS/Linux, write the JSON payload to a temporary UTF-8 file, set
+`PAYLOAD_FILE` to its path, and delete the file afterwards.
 
 ```sh
 (
@@ -119,9 +119,11 @@ macOS/Linux:
 )
 ```
 
-Windows PowerShell:
+On Windows, build `$payload` as a PowerShell hashtable with the fields above.
+Pass it directly to the sender below, which encodes the JSON in memory.
 
 ```powershell
+$body = [Text.Encoding]::UTF8.GetBytes(($payload | ConvertTo-Json -Depth 5 -Compress))
 $cfg = @{}
 $configFile = Join-Path $env:USERPROFILE '.config\grokbot\webhook.env'
 if (Test-Path -LiteralPath $configFile -PathType Leaf) {
@@ -140,17 +142,15 @@ if ($cfg.GROKBOT_WEBHOOK_URL -cnotmatch '^https://[^\s\p{Cc}]+$' -or
   throw 'Missing or invalid webhook config: ~/.config/grokbot/webhook.env'
 }
 try {
-  Invoke-RestMethod -Method Post -Uri $cfg.GROKBOT_WEBHOOK_URL -TimeoutSec 20 -MaximumRedirection 0 `
+  Invoke-RestMethod -Method Post -Uri $cfg.GROKBOT_WEBHOOK_URL -TimeoutSec 20 -MaximumRedirection 0 -ErrorAction Stop `
     -Headers @{ Authorization = $cfg.GROKBOT_WEBHOOK_AUTH } `
-    -ContentType 'application/json; charset=utf-8' -Body ([IO.File]::ReadAllBytes($payloadFile)) | Out-Null
+    -ContentType 'application/json; charset=utf-8' -Body $body | Out-Null
   'sent'
 } catch {
   if ($_.Exception.Response) { "failed: HTTP $([int]$_.Exception.Response.StatusCode)" }
   else { 'failed: webhook connection error' }
 }
 ```
-
-Delete the payload file afterwards.
 
 ## Result
 
