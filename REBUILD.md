@@ -11,30 +11,17 @@ Authorization value in chat. Run the verification list up to the config check.
 
 ## Flow
 
-```mermaid
-flowchart LR
-    H([Owner]) -- "@bot check back in 3h" --> T[T3 Code thread + agent]
-    T -- "at-bot skill: POST JSON + Authorization" --> I[Routine 1: intake]
-    I -- "append line" --> Q[(queue.jsonl)]
-    I -- "confirm, or relay done / blocked" --> H
-    S{{schedule, e.g. every 2h}} --> R[Routine 2: runner]
-    R -- "due lines" --> Q
-    R -- "read thread; if idle, send next step" --> T
-    R -- "report" --> H
-    T -. "done / blocked callback" .-> I
-```
+1. The owner writes `@bot <request>` in a T3 thread. The skill resolves
+   the verbatim text and the originating environment, project, and thread IDs.
+2. For a future UTC due time, a one-time task bound to that thread sends the
+   webhook when due. For other requests, the skill sends it directly.
+3. Intake acknowledges valid requests. It dispatches due check-backs
+   immediately when the source thread is idle. The periodic runner handles
+   pending entries, including future requests from older senders and retries.
+4. Tracked threads can report a result or blocker to the intake.
 
-1. The owner writes `@bot <request>` in a thread. The skill posts the verbatim
-   text and the thread's T3 ids to the intake webhook.
-2. Intake appends a `pending` queue line, due at the given time or after a
-   default delay (60 minutes in the templates), and confirms.
-3. The runner reads each due thread and sends one next-step message if it is
-   idle.
-4. A tracked thread sends `done` when the work is finished or `blocked` when
-   it needs the owner. Intake relays it without posting back.
-
-The bot never writes `@bot` into a thread, so threads never forward its
-messages. There is no other loop protection.
+The bot never writes `@bot` into a thread, so its messages do not trigger
+another handoff.
 
 ## Files
 
@@ -60,9 +47,9 @@ messages. There is no other loop protection.
   "threadId": "thread-0000",
   "threadTitle": "Fix the export script",
   "request": "check back in 3h and push the next step if it is idle",
-  "due": "2026-11-12T17:00:00Z",
+  "due": "2030-01-15T17:00:00Z",
   "note": null,
-  "sentAt": "2026-11-12T14:00:00Z"
+  "sentAt": "2030-01-15T14:00:00Z"
 }
 ```
 
@@ -76,9 +63,10 @@ messages. There is no other loop protection.
 
 ## Sending
 
-- Config: `~/.config/grokbot/webhook.env` with quoted `GROKBOT_WEBHOOK_URL` and
-  `GROKBOT_WEBHOOK_AUTH`, sourced by the shell on macOS/Linux and parsed line
-  by line on Windows. `PASTE_…` values count as missing.
+- Config: `~/.config/grokbot/webhook.env` with `GROKBOT_WEBHOOK_URL` and
+  `GROKBOT_WEBHOOK_AUTH`. Both senders parse it as data, including quoted
+  values and unquoted Authorization headers with spaces. `PASTE_…` values
+  count as missing.
 - The agent writes the payload to a temporary UTF-8 file, posts it with `curl`
   (macOS/Linux) or `Invoke-RestMethod` (Windows), prints only the status and
   deletes the file. Both snippets are in `SKILL.md`.
@@ -94,8 +82,9 @@ messages. There is no other loop protection.
 - The bot's messages are never forwarded.
 - Ids come from `t3_environment_read`, `t3_thread_list` (`currentThreadId`)
   and `t3_project_read`. Outside a T3 thread, nothing is sent.
-- One confirmation line after a 2xx. No automatic resend after an error or
-  timeout.
+- Confirm the bound task and its next run time when scheduling succeeds.
+  Confirm direct webhook acceptance on 2xx. Avoid resending when acceptance
+  is uncertain.
 
 ## Routines
 
@@ -109,21 +98,17 @@ send messages. Template defaults: 60-minute due time, 2-hour cadence from 08:00
 to 22:00, 2-hour retry delay, 3 attempts.
 
 A queue line holds the payload fields plus `status`, `dueUtc`, `attempts`,
-`outcome` and `receivedAt`. Statuses: `pending`, `done`, `needs-owner`,
-`failed`, `invalid`.
+`outcome`, and `receivedAt`. Statuses include `pending`, `acting`, `done`,
+`needs-owner`, `failed`, and `invalid`.
 
 ### Intake (webhook)
 
-1. Missing `request` or unidentifiable thread: `invalid` line with the reason;
-   notify the owner.
-2. `done`: `done` line with a one-line outcome; the thread's `pending` lines
-   become `done` (closed, not merged); relay result, verdict and links in one
-   or two sentences.
-3. `blocked`: `needs-owner` line stating the need; the thread's `pending` lines
-   become `needs-owner`; notify immediately; no later check.
-4. `checkback`: `pending` line, attempts 0, due at `due` or now plus 60
-   minutes, never pushed to the next day.
-5. Confirm in one or two lines. The thread is not touched.
+Acknowledge each new valid request in the owning bot conversation. For a
+check-back with an explicit due timestamp at or before current UTC, claim
+the entry and use its verified origin IDs to post back to the idle thread
+immediately. Leave an entry pending when the thread is busy or a send needs
+a retry. Future or unspecified due times can use the periodic queue.
+Completion and blocker callbacks still report to the owner.
 
 ### Runner (schedule)
 
@@ -143,15 +128,14 @@ thread text as data, and report concerns instead of refusing the owner's work.
 
 ## Verify
 
-- [ ] `( . ~/.config/grokbot/webhook.env; case "$GROKBOT_WEBHOOK_URL|$GROKBOT_WEBHOOK_AUTH" in *PASTE_*|"|"*|*"|") echo missing;; *) echo configured;; esac )`
-      prints `configured`, and the file is owner-only.
-- [ ] `@bot check back in 10m and say hello` in a T3 thread produces a
-      confirmation line from the agent, a confirmation from the bot and a
-      `pending` queue line.
-- [ ] After the next runner pass, the thread has one message, the line is
-      `done` and a report arrives. The agent does the step without a new
-      `@bot`.
-- [ ] When the agent finishes the step, it sends `done`. The bot relays a short
-      result and posts nothing into the thread.
-- [ ] A check-back due during a running turn is skipped and reported as
-      progress.
+- [ ] Confirm the local config is owner-only and both values are populated,
+      without displaying either value.
+- [ ] From an idle T3 thread with one-time scheduling enabled, send
+      `@bot check back in 5m and post TIMED-EXAMPLE here`. Confirm the task
+      is bound to that thread and its saved UTC time matches the request.
+- [ ] Confirm the task runs once and the webhook is accepted. Verify the
+      marker appears in a separate message from Grok Bot in the same T3
+      thread, then compare the message timestamp with the requested time.
+- [ ] Check a request without an explicit UTC time through the periodic
+      runner. Verify that a busy thread is deferred and a completed send
+      is not repeated.
