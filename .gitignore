@@ -1,3 +1,13 @@
 # Never commit a filled config
 webhook.env
 !webhook.env.example
+
+# Local citation build and runtime files
+__pycache__/
+*.asar
+*.asar.*
+*.app/
+*.log
+*.keychain*
+staged/
+backups/

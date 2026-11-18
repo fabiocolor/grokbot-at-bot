@@ -19,6 +19,8 @@ Authorization value in chat. Run the verification list up to the config check.
    immediately when the source thread is idle. The periodic runner handles
    pending entries, including future requests from older senders and retries.
 4. Tracked threads can report a result or blocker to the intake.
+5. The desktop citation editor can send a selected quote and a separate owner
+   instruction directly through the local relay. See [citation setup](citation/README.md).
 
 The bot never writes `@bot` into a thread, so its messages do not trigger
 another handoff.
@@ -56,10 +58,11 @@ another handoff.
 | Field | Rule |
 |---|---|
 | `source` | `t3code` from the skill; `owner` for direct posts, which need only `request` and a thread id or title. |
-| `kind` | `checkback` (default), `done` (`request` is the result) or `blocked` (`request` is what is needed). |
+| `kind` | `checkback` (default), `cite` (desktop selection), `done` or `blocked`. |
 | `request` | Check-back: text after `@bot`, verbatim. Callback: one or two sentences from the agent. |
 | `due` | Check-back only. Delays (`3h`, `30m`, `2d`) and times become UTC ISO; other text passes through; `null` means the intake default. Always `null` for callbacks. |
 | `note` | Optional context or links, no secrets. |
+| `messageId`, `quote` | Citation only. The source message ID and selected text. The thread and environment IDs describe the source; the owner names any destination in `request`. `due` is null for citations, and the bot resolves timing from `request`. |
 
 ## Sending
 
