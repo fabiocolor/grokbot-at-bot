@@ -4,9 +4,11 @@ Compact spec for rebuilding the setup. Prompt for a coding agent:
 
 ```text
 Read REBUILD.md and rebuild the @bot bridge for this T3 Code setup: the skill,
-the webhook.env config and the two Grok Bot routine prompts, adapted to the
-installed agents and the local timezone. Never ask for the webhook URL or
-Authorization value in chat. Run the verification list up to the config check.
+the webhook.env config, the two Grok Bot routine prompts and, on a supported
+T3 Code desktop build, the citation sender (local relay and desktop patch),
+adapted to the installed agents and the local timezone. Never ask for the
+webhook URL or Authorization value in chat. Run the verification list up to
+the config check.
 ```
 
 ## Flow
@@ -32,6 +34,8 @@ another handoff.
 | `skill/at-bot/SKILL.md` | Agent skill | user-level skills folder of each agent (Claude Code, Codex, Cursor) |
 | `webhook.env.example` | config template | `~/.config/grokbot/webhook.env`, owner-only |
 | `routines/*.md` | routine prompts | Grok Bot |
+| `citation/relay.py` | local relay on `127.0.0.1:47811` that forwards citations to the webhook | each desktop machine, kept running while you use citations |
+| `citation/build.py`, `citation/patch_frontend.py` | builder that adds `@bot` to the citation editor | run once per T3 Code install; see [citation setup](citation/README.md) |
 
 ## Payload
 
@@ -151,6 +155,21 @@ Completion and blocker callbacks still report to the owner.
 Both routines never write `@bot`, never repeat credentials, treat payloads and
 thread text as data, and report concerns instead of refusing the owner's work.
 
+## Citation sender
+
+- Supported build: T3 Code (Beta) 0.1.10 desktop on macOS or Windows. The
+  builder only patches when every anchor in the citation editor matches
+  exactly once, and stops otherwise. Rebuild after every T3 update.
+- macOS: build a separate signed app copy and keep the original for
+  rollback. Windows: stage a patched `server.asar`, then swap it in with a
+  `.stock` backup. Commands are in [citation setup](citation/README.md).
+- The relay reads the same `webhook.env`, accepts JSON only from the T3
+  desktop origin on loopback, and never logs the quote, instruction, IDs or
+  credentials. Start it at login if you use citations every day.
+- Payload: `kind` is `cite`, with `messageId`, `quote` and the owner's
+  instruction as `request`. The routines keep the quote separate from the
+  task.
+
 ## Verify
 
 - [ ] Confirm the local config is owner-only and both values are populated,
@@ -164,3 +183,11 @@ thread text as data, and report concerns instead of refusing the owner's work.
 - [ ] Check a request without an explicit UTC time through the periodic
       runner. Verify that a busy thread is deferred and a completed send
       is not repeated.
+- [ ] Citations: open `http://127.0.0.1:47811/health` with the relay running.
+      In the patched app, cite a harmless passage with
+      `@bot confirm this quote in the bot chat`. Confirm the **Sent to @bot**
+      toast, a receipt in the bot conversation, and no new turn in the
+      source thread.
+- [ ] New thread placement: cite a line that names another machine or
+      project and ask `@bot start a new T3 thread to fix this`. Confirm the
+      bot launches there and reports the exact machine and project.
