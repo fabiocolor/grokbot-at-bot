@@ -7,7 +7,7 @@ Waits are sped up. [Full-quality video](https://github.com/fabiocolor/grokbot-at
 
 Send a request to Grok Bot from a T3 Code thread. Use a citation to send a selected passage while the thread keeps working, or use the agent skill to schedule a check-back from the chat composer.
 
-Current version: 0.2.0. See the [changelog](CHANGELOG.md).
+Current version: 0.2.1. See the [changelog](CHANGELOG.md).
 
 ## Send from a citation
 
@@ -21,7 +21,7 @@ T3's usual citation flow. To send work back to T3, name the destination in
 your instruction, such as `@bot summarize this here when the thread is idle`.
 
 The citation sender is a desktop customization for supported T3 Code (Beta)
-0.1.10 builds. Existing users need the patch, the local relay and the updated
+0.1.10 builds on macOS, Windows and Linux. Existing users need the patch, the local relay and the updated
 intake and runner prompts. See [citation setup and rollback](citation/README.md).
 
 ## Send from the chat composer

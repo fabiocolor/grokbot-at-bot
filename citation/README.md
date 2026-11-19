@@ -62,8 +62,8 @@ Select only text you intend to share with the bot.
 
 ## Patch a supported desktop build
 
-This is a local customization for T3 Code (Beta) 0.1.10. Build from
-your installed copy with Python 3. The builder checks the expected editor
+This is a local customization for T3 Code (Beta) 0.1.10 on macOS, Windows
+and Linux. Build from your installed copy with Python 3. The builder checks the expected editor
 and stops if your build differs. Keep your original app or archive for rollback.
 Repeat the build check after a T3 update.
 
@@ -107,6 +107,28 @@ python3 citation/build.py mac "/Applications/T3 Code (Beta).app" "$HOME/T3 Code 
 Quit the stock app before opening the staged app. To roll back, quit the
 staged app and reopen the original. If macOS refuses to open the staged app,
 keep using the original. The locally modified bundle has its own signature.
+
+### Linux
+
+Use the official `T3-Code-x86_64.AppImage`. Extract it into a folder of its
+own and patch the extracted copy. The AppImage itself stays unchanged for
+rollback.
+
+```sh
+mkdir -p ~/t3-citation && cd ~/t3-citation
+cp /path/to/T3-Code-x86_64.AppImage . && chmod +x T3-Code-x86_64.AppImage
+./T3-Code-x86_64.AppImage --appimage-extract >/dev/null
+python3 /path/to/grokbot-at-bot/citation/build.py archive \
+  squashfs-root/resources/app.asar squashfs-root/resources/app.asar.botcite
+mv squashfs-root/resources/app.asar squashfs-root/resources/app.asar.stock
+mv squashfs-root/resources/app.asar.botcite squashfs-root/resources/app.asar
+```
+
+Quit the stock app, then start the patched copy with
+`~/t3-citation/squashfs-root/AppRun`. To roll back, quit it and start the
+original AppImage again. The extracted copy does not update itself. After a
+T3 update, extract and patch the new AppImage. The `.deb` package has not
+been tested.
 
 ## Check your first send
 

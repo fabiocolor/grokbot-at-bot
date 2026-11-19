@@ -95,6 +95,8 @@ def stage_archive(source, output):
     with tempfile.NamedTemporaryFile(dir=output.parent, delete=False) as temporary:
         temporary.write(patched)
     staged = Path(temporary.name)
+    # Keep the original permissions so other users can still read the archive.
+    os.chmod(staged, source.stat().st_mode & 0o777)
     try:
         os.link(staged, output)
     finally:
@@ -132,7 +134,7 @@ def mac_copy(source, output, identity):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     actions = parser.add_subparsers(dest="action", required=True)
-    archive = actions.add_parser("archive", help="stage a separate Windows server.asar")
+    archive = actions.add_parser("archive", help="stage a separate archive (Windows server.asar, Linux app.asar)")
     archive.add_argument("source", type=Path)
     archive.add_argument("output", type=Path)
     mac = actions.add_parser("mac", help="stage a separate signed macOS app")

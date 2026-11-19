@@ -157,12 +157,14 @@ thread text as data, and report concerns instead of refusing the owner's work.
 
 ## Citation sender
 
-- Supported build: T3 Code (Beta) 0.1.10 desktop on macOS or Windows. The
+- Supported build: T3 Code (Beta) 0.1.10 desktop on macOS, Windows or Linux
+  (AppImage). The
   builder only patches when every anchor in the citation editor matches
   exactly once, and stops otherwise. Rebuild after every T3 update.
 - macOS: build a separate signed app copy and keep the original for
   rollback. Windows: stage a patched `server.asar`, then swap it in with a
-  `.stock` backup. Commands are in [citation setup](citation/README.md).
+  `.stock` backup. Linux: extract the AppImage and patch the extracted
+  `resources/app.asar`, keeping the AppImage for rollback. Commands are in [citation setup](citation/README.md).
 - The relay reads the same `webhook.env`, accepts JSON only from the T3
   desktop origin on loopback, and never logs the quote, instruction, IDs or
   credentials. Start it at login if you use citations every day.

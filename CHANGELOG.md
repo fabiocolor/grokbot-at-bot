@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.1 (19 November 2026)
+
+### New
+
+- **Citations on Linux.** Setup steps for the official T3 Code 0.1.10
+  AppImage. Tested from a fresh clone: the patched app started, showed the
+  **@bot** button and delivered a citation through the relay.
+
+### Fixed
+
+- The builder keeps the original file permissions on the patched archive.
+  Before, it was readable only by the user who built it.
+
 ## 0.2.0 (19 November 2026)
 
 ### New
