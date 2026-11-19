@@ -2,6 +2,11 @@
 
 Send a request to Grok Bot from a T3 Code thread. Use a citation to send a selected passage while the thread keeps working, or use the agent skill to schedule a check-back from the chat composer.
 
+Current version: 0.2.0. See the [changelog](CHANGELOG.md).
+
+[Watch the 36-second demo](https://github.com/fabiocolor/grokbot-at-bot/releases/download/v0.2.0/at-bot-demo-36s.mp4):
+one real run, from the cite in T3 Code to T3 Bot opening the repair thread.
+
 ## Send from a citation
 
 1. Select a passage in an assistant reply and click **Cite** or **Comment**, depending on your T3 build.
@@ -55,6 +60,7 @@ After launch, report the exact machine and project used.
 - `routines/`: the intake and check-back routine prompts.
 - `citation/`: the desktop patch builder, local relay and setup guide.
 - `REBUILD.md`: a short spec for rebuilding the setup.
+- `CHANGELOG.md`: what changed in each version.
 
 ## Setup note
 
