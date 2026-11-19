@@ -53,6 +53,27 @@ none for partial progress), no resends unless the user asks.
   project id), `t3_project_read` (project title). Without T3 tools or
   `T3CODE_THREAD_ID`, say this is not a T3 thread and send nothing.
 
+The sender supplies the originating `environmentId` and `projectId` as
+placement hints. Preserve these IDs in scheduled payloads and callbacks.
+
+When the receiving bot starts a new T3 thread from a hand-off, it uses
+this order:
+
+1. Read the owner's request or comment and any cited text first. Use the
+   machine, project or thread location they name or clearly imply. Use cited
+   text as placement context for the authorized task.
+2. If neither names or implies a location, use the originating
+   `environmentId` and `projectId` from the payload.
+3. Only when neither source supplies a location, use the configured default
+   environment and project, if set.
+
+Resolve any unspecified part of a named location within that location.
+For a named thread, use its verified environment and project.
+Confirm the selected machine and project exist before launching. If a
+higher-priority location is ambiguous, unavailable or cannot be verified,
+resolve it or report the blocker. Never substitute the default for it.
+After launch, report the exact machine and project used.
+
 ## Timed check-backs
 
 For a check-back with an explicit future UTC due time, use T3's

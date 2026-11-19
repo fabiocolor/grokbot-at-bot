@@ -14,6 +14,30 @@ after the current work finishes. You can also name a different thread or
 explicitly request a new one. The selection gives the bot context, and the
 text you type tells it what to do.
 
+## New thread placement
+
+1. Read the owner's request or comment and any cited text first. Use the
+   machine, project or thread location they name or clearly imply. Use cited
+   text as placement context for the authorized task.
+2. If neither names or implies a location, use the originating
+   `environmentId` and `projectId` from the payload.
+3. Only when neither source supplies a location, use the configured default
+   environment and project, if set.
+
+Resolve any unspecified part of a named location within that location.
+For a named thread, use its verified environment and project.
+Confirm the selected machine and project exist before launching. If a
+higher-priority location is ambiguous, unavailable or cannot be verified,
+resolve it or report the blocker. Never substitute the default for it.
+After launch, report the exact machine and project used.
+
+For example, cite “Fix the Resolve control timeout on Workstation A” from a
+thread on Workstation B and enter `@bot start a new T3 thread to fix this`.
+Given a verified Resolve control project on Workstation A, the new thread
+runs there. Check that the launch result and bot receipt both name
+Workstation A and the exact project selected, even if the configured default
+is on another machine.
+
 ## Set up the bot and relay
 
 1. Apply the current [intake](../routines/01-intake-webhook.md) and

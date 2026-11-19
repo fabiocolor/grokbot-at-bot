@@ -62,7 +62,8 @@ another handoff.
 | `request` | Check-back: text after `@bot`, verbatim. Callback: one or two sentences from the agent. |
 | `due` | Check-back only. Delays (`3h`, `30m`, `2d`) and times become UTC ISO; other text passes through; `null` means the intake default. Always `null` for callbacks. |
 | `note` | Optional context or links, no secrets. |
-| `messageId`, `quote` | Citation only. The source message ID and selected text. The thread and environment IDs describe the source; the owner names any destination in `request`. `due` is null for citations, and the bot resolves timing from `request`. |
+| `environmentId`, `projectId` | Origin IDs and second-priority placement hints for new threads. Preserve them through intake and retries. |
+| `messageId`, `quote` | Citation only. The source message ID and selected text. Read the quote and owner comment for placement. `due` is null for citations, and the bot resolves timing from `request`. |
 
 ## Sending
 
@@ -98,13 +99,32 @@ intake routine, copy its webhook URL and Authorization value into
 `~/.config/grokbot/webhook.env` on each machine.
 
 Prompts are in `routines/`, with placeholders `{{OWNER}}`, `{{TIMEZONE}}` and
-`{{QUEUE_FILE}}`. The bot needs a T3 Code connection that can read threads and
-send messages. Template defaults: 60-minute due time, 2-hour cadence from 08:00
+`{{QUEUE_FILE}}`. Set `{{DEFAULT_ENVIRONMENT_ID}}` and
+`{{DEFAULT_PROJECT_ID}}` only if you want a last-resort launch location.
+The bot needs a T3 Code connection that can read threads and send messages,
+and launch threads if the owner requests them. Template defaults: 60-minute due time, 2-hour cadence from 08:00
 to 22:00, 2-hour retry delay, 3 attempts.
 
 A queue line holds the payload fields plus `status`, `dueUtc`, `attempts`,
 `outcome`, and `receivedAt`. Statuses include `pending`, `acting`, `done`,
 `needs-owner`, `failed`, and `invalid`.
+
+### New thread placement
+
+1. Read the owner's request or comment and any cited text first. Use the
+   machine, project or thread location they name or clearly imply. Use cited
+   text as placement context for the authorized task.
+2. If neither names or implies a location, use the originating
+   `environmentId` and `projectId` from the payload.
+3. Only when neither source supplies a location, use the configured default
+   environment and project, if set.
+
+Resolve any unspecified part of a named location within that location.
+For a named thread, use its verified environment and project.
+Confirm the selected machine and project exist before launching. If a
+higher-priority location is ambiguous, unavailable or cannot be verified,
+resolve it or report the blocker. Never substitute the default for it.
+After launch, report the exact machine and project used.
 
 ### Intake (webhook)
 

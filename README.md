@@ -32,6 +32,23 @@ The bot never writes `@bot` into a thread, so it cannot trigger itself.
 
 Requests go to whichever Grok Bot owns the webhook routine. To use a different bot, create the routines there and point the config at its webhook.
 
+## New thread placement
+
+1. Read the owner's request or comment and any cited text first. Use the
+   machine, project or thread location they name or clearly imply. Use cited
+   text as placement context for the authorized task.
+2. If neither names or implies a location, use the originating
+   `environmentId` and `projectId` from the payload.
+3. Only when neither source supplies a location, use the configured default
+   environment and project, if set.
+
+Resolve any unspecified part of a named location within that location.
+For a named thread, use its verified environment and project.
+Confirm the selected machine and project exist before launching. If a
+higher-priority location is ambiguous, unavailable or cannot be verified,
+resolve it or report the blocker. Never substitute the default for it.
+After launch, report the exact machine and project used.
+
 ## Files
 
 - `skill/at-bot/SKILL.md`: the agent skill.
