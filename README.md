@@ -1,11 +1,13 @@
 # @bot for T3 Code threads
 
+[![Cite a line in T3 Code and T3 Bot opens the repair thread](docs/demo.gif)](https://github.com/fabiocolor/grokbot-at-bot/releases/download/v0.2.0/at-bot-demo-36s.mp4)
+
+One real run, from the cite in T3 Code to T3 Bot opening the repair thread.
+Waits are sped up. [Full-quality video](https://github.com/fabiocolor/grokbot-at-bot/releases/download/v0.2.0/at-bot-demo-36s.mp4).
+
 Send a request to Grok Bot from a T3 Code thread. Use a citation to send a selected passage while the thread keeps working, or use the agent skill to schedule a check-back from the chat composer.
 
 Current version: 0.2.0. See the [changelog](CHANGELOG.md).
-
-[Watch the 36-second demo](https://github.com/fabiocolor/grokbot-at-bot/releases/download/v0.2.0/at-bot-demo-36s.mp4):
-one real run, from the cite in T3 Code to T3 Bot opening the repair thread.
 
 ## Send from a citation
 
